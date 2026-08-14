@@ -1,0 +1,68 @@
+# Agent repair loop — Lecture 6.2
+#
+# When CI fails on main, this workflow asks Claude Code (headless) to
+# diagnose via Frank and open a fix PR. The human stays at the PR gate:
+# branch protection on main means an agent can never self-merge.
+#
+# Required repo secrets:
+#   ANTHROPIC_API_KEY   — for headless claude -p
+#   FRANK_URL           — e.g. https://frank.internal:8720/mcp (reachable from runner)
+#   FRANK_TOKEN         — bearer token for Frank
+#
+# NOTE FOR RECORDING: verify current claude CLI flags and MCP config format
+# against the docs when you record — this surface evolves quickly.
+
+name: Agent repair
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  repair:
+    # Only run when CI actually failed (or when triggered manually for the demo)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install project deps
+        run: pip install -r requirements.txt
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Configure Frank as an MCP server
+        run: |
+          claude mcp add --transport http frank "$FRANK_URL" \
+            --header "Authorization: Bearer $FRANK_TOKEN"
+        env:
+          FRANK_URL: ${{ secrets.FRANK_URL }}
+          FRANK_TOKEN: ${{ secrets.FRANK_TOKEN }}
+
+      - name: Diagnose and fix
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          claude -p "CI on main is red. Use Frank's get_failed_jobs and \
+          get_job_log tools to find the failing job and root cause. Create a \
+          branch named agent/fix-ci, make the minimal fix, run 'make test' \
+          until green, then open a PR with gh pr create explaining the root \
+          cause and the fix. Do not touch unrelated code." \
+            --allowedTools "mcp__frank__*,Bash(make test),Bash(git *),Bash(gh pr create*),Edit,Read" \
+            --max-turns 30

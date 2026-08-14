@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check app tests
+
+      - name: Test
+        run: pytest -q
+
+      # Deploy marker: on main, record what shipped so Frank's deploy_status()
+      # tool has something real to read. In the course this step is replaced
+      # by a real deploy job in Section 6.
+      - name: Write deploy marker
+        if: github.ref == 'refs/heads/main' && success()
+        run: |
+          echo "{\"sha\": \"${GITHUB_SHA}\", \"run_id\": \"${GITHUB_RUN_ID}\", \"status\": \"deployed\"}" > deploy.json
+          cat deploy.json
