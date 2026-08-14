@@ -9,9 +9,17 @@ pipeline *around* it.
 
 ## Quick start
 
+**Fork this repo first** (recommended — Sections 5–7 of the course need CI
+runs and PRs in a repo you own, and your Claude Project can read your fork
+via the GitHub connector). A plain clone works if you're just following
+along. After forking, enable workflows on your fork (Actions tab → enable).
+
 ```bash
+git clone https://github.com/YOUR-USERNAME/shipit-api.git
+cd shipit-api
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-make test     # 16 tests, all green
+make test     # 16 tests, all green — your baseline
 make run      # http://localhost:8000/docs
 ```
 

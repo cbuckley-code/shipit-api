@@ -20,6 +20,11 @@ Run `bd ready` before starting work. Claim with `bd update <id> --status in_prog
 close with `bd close <id>`, and end every session by writing the next-session
 prompt into the bead comments.
 
+## Slash commands
+Team workflows live in `.claude/commands/` and are versioned with the code.
+Start with `/plan-feature <name>` — it plans against the product brief and
+ADRs in `docs/` before any code is written.
+
 ## Pipeline
 CI runs lint + tests on every push and PR (.github/workflows/ci.yml).
 Frank (the team MCP server) exposes pipeline state — ask it for failed jobs
