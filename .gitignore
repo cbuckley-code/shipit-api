@@ -6,3 +6,5 @@ __pycache__/
 deploy.json
 *.bak
 _to_delete/
+CLAUDE.local.md
+.claude/settings.local.json
