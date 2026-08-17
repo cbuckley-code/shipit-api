@@ -17,4 +17,5 @@ You are planning, not implementing. Do not write or modify application code.
    - Test plan, including boundary cases per ADR-001's convention
    - Risks and open questions for the humans
 4. End by listing which tasks are independent (parallelizable) and which
-   block others — this breakdown becomes tracker issues later.
+   block others — this breakdown becomes the build queue for execution
+   (and maps cleanly onto an issue tracker if your team runs one).

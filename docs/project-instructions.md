@@ -25,5 +25,5 @@ When answering questions about ShipIt:
 - Don't re-litigate accepted ADRs; note that changing one requires a new ADR.
 - Code lives in the `shipit-api` repo. Conventions: tests first, inclusive
   boundaries per ADR-001, conventional commits, small PRs.
-- Task tracking is in beads (`bd`) inside the repo; Jira holds the
-  stakeholder-level stories.
+- Feature plans live in `docs/plans/` — a plan's task table is the work
+  queue, and each task's definition of done is the prompt.

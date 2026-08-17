@@ -1,11 +1,22 @@
-# ShipIt API
+# ShipIt — the course monorepo
 
-The demo application for **Claude for Engineering Teams — From Chat to Agent
-Pipelines**. A small FastAPI shipments service with a real test suite and a
-real CI pipeline — the thing Frank monitors and agents fix.
+The demo project for **Claude for Engineering Teams — From Chat to Agent
+Pipelines**. A small FastAPI shipments service with a real test suite and
+CI — plus **Frank**, the team's MCP server, living in `frank/` with a
+push-to-deploy pipeline to Azure.
 
-This repo is deliberately small and boring. The course is about the agent
-pipeline *around* it.
+```
+app/ tests/            the product (deliberately small and boring)
+frank/                 the team's MCP surface (+ its own CLAUDE.md)
+docs/                  brief, ADRs, plans — the source of truth
+.claude/               team playbook: commands + agents
+.github/workflows/     ci.yml · agent-repair.yml · deploy-frank.yml
+infra/azure-setup.md   fork + one secret + push → Frank is live
+```
+
+Monorepo on purpose: one checkout gives an agent the product, the infra,
+the docs, and the playbook — cross-cutting changes land in one PR, and
+nested CLAUDE.md files scope memory per directory.
 
 ## Quick start
 

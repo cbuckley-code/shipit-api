@@ -5,3 +5,4 @@ __pycache__/
 .venv/
 deploy.json
 *.bak
+_to_delete/
