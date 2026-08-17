@@ -7,7 +7,7 @@ checkout gives an agent the whole world.
 - `frank/` — the team's MCP surface; has its own nested CLAUDE.md that
   loads when work touches that directory
 - `docs/` — brief, ADRs, plans (the source of truth)
-- `.claude/` — team playbook: commands and agents, versioned like code
+- `.claude/` — team playbook: settings.json (permissions), commands, and agents, versioned like code
 - `.github/workflows/` — CI, agent repair, and push-to-deploy for Frank
 
 ## Stack

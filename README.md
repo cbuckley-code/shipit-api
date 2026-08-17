@@ -9,7 +9,7 @@ push-to-deploy pipeline to Azure.
 app/ tests/            the product (deliberately small and boring)
 frank/                 the team's MCP surface (+ its own CLAUDE.md)
 docs/                  brief, ADRs, plans — the source of truth
-.claude/               team playbook: commands + agents
+.claude/               team playbook: settings.json + commands/ + agents/
 .github/workflows/     ci.yml · agent-repair.yml · deploy-frank.yml
 infra/azure-setup.md   fork + one secret + push → Frank is live
 ```
