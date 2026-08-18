@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass, field
-from typing import Optional
 
 from app.pricing import calc_shipping_cost
 
@@ -65,10 +64,10 @@ class ShipmentStore:
         self._items[shipment.id] = shipment
         return shipment
 
-    def get(self, shipment_id: int) -> Optional[Shipment]:
+    def get(self, shipment_id: int) -> Shipment | None:
         return self._items.get(shipment_id)
 
-    def list(self, status: Optional[str] = None) -> list[Shipment]:
+    def list(self, status: str | None = None) -> list[Shipment]:
         items = list(self._items.values())
         if status is not None:
             items = [s for s in items if s.status == status]

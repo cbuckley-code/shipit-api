@@ -13,7 +13,7 @@ from __future__ import annotations
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from app.shipments import ShipmentStore, TransitionError, TRANSITIONS
+from app.shipments import TRANSITIONS, ShipmentStore, TransitionError
 
 app = FastAPI(title="ShipIt API", version="1.0.0")
 store = ShipmentStore()
