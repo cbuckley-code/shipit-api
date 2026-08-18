@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+# `pytest` (the console script) does not put CWD on sys.path — only
+# `python -m pytest` does. Without this, `make test` and CI collect nothing:
+# tests/test_api.py fails at `from app.main import app` with ModuleNotFoundError.
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+# Pinned explicitly. Ruff's *default* rule set grows between releases, so
+# relying on it means a new ruff version turns CI red without a code change.
+# Add rules here deliberately; don't inherit them by upgrading.
+select = ["E4", "E7", "E9", "F", "I", "UP"]
