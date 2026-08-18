@@ -4,8 +4,10 @@
 # diagnose via Frank and open a fix PR. The human stays at the PR gate:
 # branch protection on main means an agent can never self-merge.
 #
-# Required repo secrets:
+# Required repo secret:
 #   ANTHROPIC_API_KEY   — for headless claude -p
+#
+# Optional (enables diagnosis through Frank instead of gh):
 #   FRANK_URL           — e.g. https://frank.internal:8720/mcp (reachable from runner)
 #   FRANK_TOKEN         — bearer token for Frank
 #
@@ -46,23 +48,54 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Configure Frank as an MCP server
+      # Fail with a clear message rather than letting a downstream tool report
+      # an empty secret as a confusing syntax error.
+      - name: Check required secrets
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          claude mcp add --transport http frank "$FRANK_URL" \
-            --header "Authorization: Bearer $FRANK_TOKEN"
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY is not set. Add it under" \
+                 "Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
+      # Frank is optional. When FRANK_URL/FRANK_TOKEN are set the agent
+      # diagnoses through Frank's tools; otherwise it falls back to reading the
+      # failed run with gh. Passing an empty URL here is what previously failed
+      # the whole job with "Command is required when server name is provided".
+      - name: Configure Frank as an MCP server
+        id: frank
         env:
           FRANK_URL: ${{ secrets.FRANK_URL }}
           FRANK_TOKEN: ${{ secrets.FRANK_TOKEN }}
+        run: |
+          if [ -z "$FRANK_URL" ] || [ -z "$FRANK_TOKEN" ]; then
+            echo "FRANK_URL/FRANK_TOKEN not set — diagnosing via gh instead."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          claude mcp add --transport http frank "$FRANK_URL" \
+            --header "Authorization: Bearer $FRANK_TOKEN"
+          echo "available=true" >> "$GITHUB_OUTPUT"
 
       - name: Diagnose and fix
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GH_TOKEN: ${{ github.token }}
+          FRANK_AVAILABLE: ${{ steps.frank.outputs.available }}
+          FAILED_RUN_ID: ${{ github.event.workflow_run.id }}
         run: |
-          claude -p "CI on main is red. Use Frank's get_failed_jobs and \
-          get_job_log tools to find the failing job and root cause. Create a \
-          branch named agent/fix-ci, make the minimal fix, run 'make test' \
-          until green, then open a PR with gh pr create explaining the root \
-          cause and the fix. Do not touch unrelated code." \
-            --allowedTools "mcp__frank__*,Bash(make test),Bash(git *),Bash(gh pr create*),Edit,Read" \
+          if [ "$FRANK_AVAILABLE" = "true" ]; then
+            DIAGNOSE="Use Frank's get_failed_jobs and get_job_log tools to find the failing job and root cause."
+          elif [ -n "$FAILED_RUN_ID" ]; then
+            DIAGNOSE="Run 'gh run view $FAILED_RUN_ID --log-failed' to find the failing step and root cause."
+          else
+            DIAGNOSE="Find the most recent failed CI run with 'gh run list --workflow=ci.yml --status=failure -L 1', then read it with 'gh run view <id> --log-failed'."
+          fi
+          claude -p "CI on main is red. ${DIAGNOSE} Create a branch named \
+          agent/fix-ci, make the minimal fix, run 'make test' until green, then \
+          open a PR with gh pr create explaining the root cause and the fix. Do \
+          not touch unrelated code." \
+            --allowedTools "mcp__frank__*,Bash(make test),Bash(git checkout:*),Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(gh pr create:*),Bash(gh run view:*),Edit,Read" \
             --max-turns 30
