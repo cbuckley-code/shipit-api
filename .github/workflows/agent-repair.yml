@@ -1,4 +1,4 @@
-# Agent repair loop — Lecture 6.2
+# Agent repair loop — Section 5 (the repair loop)
 #
 # When CI fails on main, this workflow asks Claude Code (headless) to
 # diagnose via Frank and open a fix PR. The human stays at the PR gate:

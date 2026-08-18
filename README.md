@@ -38,12 +38,28 @@ make run      # http://localhost:8000/docs
 
 | Lecture | What happens here |
 |---|---|
-| 2.3 | VS Code deep-dive: `scripts/stage_bug.sh` breaks a real test; Claude fixes it hunk-by-hunk |
-| 3.1 | `CLAUDE.md` is built on camera — repo memory for every agent session |
-| 5.x | Frank's GitHub tools point at this repo's Actions runs |
-| 6.2 | Repair loop: stage the bug, push, CI goes red, `agent-repair.yml` opens the fix PR |
-| 7.x | beads database lives here (`bd init` on camera in 7.2); agents work the queue |
-| 7.6 | Money demo: "Add rate limiting to the API" — intentionally **not implemented**, agents build it live |
+| 2.1–2.2 | The docs/ feed the ShipIt Project; you fork this repo and tour `.claude/` |
+| 2.3 | Desktop Code tab: `scripts/stage_bug.sh` breaks a real test; you prompt the fix |
+| 2.4 | VS Code: `/plan-feature rate limiting` → build it → push → CI green (`deploy-frank.yml` stays dormant — Section 4 wakes it) |
+| 2.6 | CLI: the drill, the playbook, `CLAUDE.md` — then build the shipment-history feature terminal-only, driven from your phone |
+| 4.x | Frank is built AND deployed here — `deploy-frank.yml` wakes up, Azure URL in the run summary |
+| 5.2 | Repair loop: stage the bug, push, CI goes red, `agent-repair.yml` opens the fix PR |
+| 5.5 | Money demo: "Auth on write paths" — intentionally **not implemented**, agents build it live |
+
+## Secrets you'll add during the course
+
+Values never go in the repo — add them on your fork under
+**Settings → Secrets and variables → Actions**. Full steps: `infra/azure-setup.md`.
+
+| Secret | Used by | When you add it |
+|---|---|---|
+| `AZURE_CREDENTIALS` | `deploy-frank.yml` (azure/login) | Section 4.5 — one Cloud Shell command creates it |
+| `FRANK_AUTH_TOKEN` | `deploy-frank.yml` → Frank's bearer token | Section 4.5 — any long random string |
+| `FRANK_GITHUB_TOKEN` | `deploy-frank.yml` → Frank's GitHub tools | Section 4.5 — fine-grained PAT, this repo, Actions: read |
+| `ANTHROPIC_API_KEY` | `agent-repair.yml` (headless `claude -p`) | Section 5.2 — the repair loop's engine |
+| `FRANK_URL` / `FRANK_TOKEN` *(optional)* | `agent-repair.yml` — diagnose via Frank | After Frank is live; without them the loop falls back to `gh` |
+
+CI (`ci.yml`) needs no secrets — it's green on a bare fork.
 
 ## The on-camera bug
 
@@ -63,23 +79,24 @@ realistic, and it produces a clean failing-test narrative rather than a toy.
 - `GET /shipments/{id}` — fetch
 - `POST /shipments/{id}/transition` — status transitions (label_created → dispatched → delivered, or cancelled)
 
-**No rate limiting. No auth on write paths.** Both are intentional gaps —
-they're the stories the PM writes in Jira for the Section 7 demos.
+**No rate limiting. No auth on write paths. No transition history endpoint.**
+All three are intentional gaps: students build the first in VS Code (2.4)
+and the second-to-last in the CLI (2.6); agents ship auth in the 5.5 money demo.
 
-## Task tracking (Section 7)
+## Task tracking (Bonus section)
 
-Initialize beads on camera in Lecture 7.2:
+The bonus lectures show beads as the agent-fleet queue:
 
 ```bash
 bd init
-bd create "Add rate limiting to the API" -p 1
+bd create "Add auth to write paths" -p 1
 bd ready
 ```
 
-`CLAUDE.md` already tells agents to run `bd ready` before starting work.
+`CLAUDE.md` already tells agents how plans in `docs/plans/` drive the work.
 
-## Deploying next to Frank (optional, Section 6)
+## Deploying Frank (Section 4)
 
-Run it as a systemd service on the same EC2 box as Frank so
-`service_status("shipit")` and `tail_log("shipit")` return live data.
-See `frank-mcp-server/deploy/ec2-setup.md` for the unit file pattern.
+Fork + one secret + push: see `infra/azure-setup.md`. The
+`deploy-frank.yml` workflow builds `frank/` from source and prints
+Frank's HTTPS `/mcp` URL in the run summary.

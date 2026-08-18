@@ -8,7 +8,7 @@ your browser), and GitHub Actions does everything else.
 
 Push to `main` (touching `frank/**`) → GitHub Actions builds Frank from
 source in Azure and deploys him to **Azure Container Apps** → the run
-summary prints his HTTPS URL. Every client from Lecture 5.6 connects to it.
+summary prints his HTTPS URL. Every client from the connect-everywhere lecture (4.7) connects to it.
 
 ## 1. Create the deploy credential (one Cloud Shell command)
 
@@ -27,7 +27,7 @@ az ad sp create-for-rbac \
 
 3. Copy the entire JSON block it prints. That's your deploy credential.
 
-> Least privilege note (Lecture 5.5): contributor-on-subscription is the
+> Least privilege note (Lecture 4.6): contributor-on-subscription is the
 > friction-free classroom setting. At work, scope to one resource group
 > and prefer OIDC federated credentials over a secret — same workflow,
 > different login step.
